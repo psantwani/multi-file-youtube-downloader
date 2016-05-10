@@ -1,0 +1,10 @@
+{
+  "name": "get-post-demo",
+  "version": "0.0.1",
+  "dependencies": {
+    "body-parser": "^1.8.1",
+    "express": "^4.9.0",
+    "fs-extra": "^0.14.0",
+    "youtube-dl": "^1.11.1"
+  }
+}
