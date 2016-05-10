@@ -40,14 +40,13 @@ app.post('/', function (req, res) {
     archive.addFiles(array, 
 		function () {
         var buff = archive.toBuffer();        
-        fs.writeFile(__dirname + "\\files\\"+userid+".zip", buff, function () {
+        fs.writeFile(__dirname + "/files/"+userid+".zip", buff, function () {
             console.log("Finished");
-			res.download(__dirname + "\\files\\" + userid + ".zip");
+			res.download(__dirname + "/files/" + userid + ".zip");
         });
 		}, function (err) {
 			console.log(err);
-		});
-			//res.download(__dirname + "\\files\\" + userid + ".zip");		
+		});			
 		}
 		
     if (downloadfile == "delete") {	
@@ -70,7 +69,7 @@ app.post('/', function (req, res) {
 		var video = youtubedl(record,
             ["--extract-audio"],
             { cwd: __dirname });                        
-            video.pipe(fs.createWriteStream(__dirname + "\\files\\" + userid + "\\" + recordname + '.mp4'));
+            video.pipe(fs.createWriteStream(__dirname + "/files/" + userid + "/" + recordname + '.mp4'));
 			//console.log("5");
 			songs.splice(0,1);
 			titles.splice(0,1);
