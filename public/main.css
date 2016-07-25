@@ -1,0 +1,42 @@
+html {
+position:relative;
+min-height:100%;
+}
+
+body {
+font-family:Rokkitt;
+overflow-x:hidden;
+margin-bottom:60px;
+}
+
+h2 {
+font-family:Lobster;
+}
+
+#search-button {
+padding-top:10px;
+margin-top:10px;
+}
+
+.form-control {
+font-size:20px;
+}
+
+footer {
+position:absolute;
+bottom:0;
+width:100%;
+height:60px;
+text-align:center;
+letter-spacing:1px;
+background:#2c3e50;
+color:#fff;
+padding:2em 10%;
+}
+
+footer p {
+letter-spacing:4px;
+text-transform:uppercase;
+text-align:center;
+display:inline-block;
+}

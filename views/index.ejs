@@ -1,0 +1,144 @@
+<html>
+<head>
+	<title>DownloadMyPlaylist</title>
+	<meta name="keywords" content="Youtube, Playlist, Music, Mp3, Mp4, Download">
+	<meta name="description" content="List down your favorite music titles and download them all in one click.">
+	<meta name="google-site-verification" content="kNigeYRqtbZA5bcKu7UYogKhcES4k1XPRHypBYMtLjo" />
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>	
+	<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>  
+	<link href='http://fonts.googleapis.com/css?family=Rokkitt:700' rel='stylesheet' type='text/css'>      
+	<link href='http://fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'>	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+	<link rel="stylesheet" href="main.css"> 
+	<link rel="stylesheet" href="style.css">             
+</head>
+<body>
+	<header>
+		<h1><i class="fa fa-cloud"></i>&nbsp; Download My Playlist &nbsp;<i class="fa fa-cloud"></i></h1>
+		<p>Downloading your favorite songs just got easier!</p>
+		<h3>Follow me <i class="fa fa-github-alt"></i> <a href="silentx09.github.io" target="_blank">Silentx09</a></h3>
+	</header>
+	<div class="col-md-12" style="margin-bottom: 20px;">      
+
+		<form id="myform" role="form">
+			<input type="text" style="display: none" />
+
+			<h2 class="heading">FORMALITY</h2>
+			<div class="controls">
+				<input type="text" id="pseudo" class="floatLabel" name="userName" placeholder="Your Pseudo Name">      
+			</div>		 
+
+			<input type="text" autocomplete="off" class="form-control" name="songName" id="songName" style="padding:10px;display: none">	
+			<br>
+
+			<h2 class="heading">BUSINESS</h2>
+			<div class="controls">
+				<textarea name="comments" class="floatLabel" id="query" name="query" cols="100" rows="10" placeholder="Write down the names of the songs you want to download. One name per line."></textarea>      
+				<button id="search-button">Submit</button>  
+				<div id="search-container" style="display: none;">
+					<pre style="padding: 10px;">Fetching Results. Please Wait..</pre>
+				</div>
+			</div>         
+
+			<textarea id="video_id" name="video_id" cols="100" rows="10" style="margin-top:10px; padding:10px;display: none;"></textarea>		           
+		</form>	  
+		<div id="videoId-container" style="margin-top:10px;" style="display: none;">	  
+		</div>            
+
+
+
+	</div>   
+
+	<footer id="site_footer">
+		<p>Silentx © 2016</p>
+	</footer>
+
+	<script>
+
+	var q_array;
+	var urls = [];
+	var i = 0;
+	var p = 0;
+	$("#search-button").click(function (e) {
+		e.preventDefault();
+		if($("#pseudo").val().trim() == "" || $("#query").val().trim() == "")  
+		{
+			alert("Both input fields are mandatory.")
+		}
+		else{
+
+
+
+			$("#search-container").css("display", "block");
+			var q = $('#query').val();
+			q_array = $("#query").val().split("\n");
+			count = 0;
+			insertone(i);
+		}
+
+	});
+	function insertone(k) {
+		var record = q_array[k];
+		$.get(
+			"https://www.googleapis.com/youtube/v3/search", {
+				part: "snippet",
+				q: record + " song",
+				key: "AIzaSyBhLtb_Q--NrgcK3Wua9lT2OUUzJPvKGJA"
+			},
+			function (data) {
+				$('#video_id').append("<pre>https://www.youtube.com/watch?v=" + data.items[0].id.videoId + '<pre>');
+				addonemore(data.items[0].id.videoId);
+			}
+			);
+
+
+
+	}
+
+	function addonemore(m) {
+		urls.push(m)
+		if (typeof q_array[p] == "undefined") {
+			urls.splice(p, 1);
+		}
+		if (p < q_array.length) {
+			p = p + 1;
+			insertone(p);
+		}
+		else {
+			delay();
+		}
+	}
+
+	function delay() {
+		if (urls.length == 0) {
+			console.log("error handling");
+		}
+		else {
+			console.log(urls);
+			var abc = "";
+			var pqr = "";
+			for (var i = 0; i < urls.length; i++) {
+				abc += "https://www.youtube.com/watch?v=" + urls[i] + ",";
+			}
+			for (var j = 0; j < q_array.length; j++) {
+				pqr += q_array[j] + ",";
+			}
+			abc = abc.replace(/,+$/, "");
+			pqr = pqr.replace(/,+$/, "");
+
+			var form = document.forms[0];
+			form.setAttribute("method", "post");
+			form.setAttribute("action", "/");
+			form.elements["songName"].value = pqr;
+			form.elements["video_id"].value = abc;
+			form.submit();
+		}
+	}
+	</script>	   
+
+	<script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

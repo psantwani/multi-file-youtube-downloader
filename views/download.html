@@ -1,0 +1,33 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>DownloadMyPlayList - Download</title>
+    <link rel="stylesheet" href="main.css"> 
+    <link rel="stylesheet" href="style.css">   
+    <link rel="stylesheet" href="shiny.css">   
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">                  
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>  
+    <script src="modernizr.js"></script>
+</head>
+<body>
+    <header>
+      <h1><i class="fa fa-cloud"></i>&nbsp; Download My Playlist &nbsp;<i class="fa fa-cloud"></i></h1>
+      <p>Downloading your favorite songs just got easier!</p>
+      <h3>Follow me <i class="fa fa-github-alt"></i> <a href="https://twitter.com/PiArigato" target="_blank">  Silentx09</a></h3>
+  </header>
+  <form method="post" action="http://localhost:8000/" style="padding-bottom: 28px;">
+    <p style="font-size: 28px;line-height: 1.5;color: #442; font-family: Noto serif, serif;">Your files are ready to be downloaded.</p>
+    <input type="text" style="display: none" value="download" name="download"/>            
+    <input type="text" style="display: none" value="<%= searchFile %>" name="searchFile"/>            
+    <input type="text" style="display: none" value="<%= userId %>" name="userId"/>            
+    <input class = "btn btn-success" type="submit" class='shiny-button' id="shiny" value="Download" style="font-size: 18px;line-height: 1.5;"/>
+    <a class="btn btn-primary" href="/" style="text-decoration: none;font-size: 18px;line-height: 1.5;">Go Back</a>
+
+</form>
+<footer id="site_footer">
+  <p>Silentx © 2016</p>
+</footer>
+</body>
+</html>

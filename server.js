@@ -1,113 +1,168 @@
 var express = require('express');
 var app = express();
+var path = require('path');
 var bodyParser = require("body-parser");
+var ejs = require('ejs');
 var fs = require("fs");
+var del = require('del');
+var ffmpeg = require('ffmpeg');
 var youtubedl = require("youtube-dl");
+var ffmpeg = require("ffmpeg");
 var mkdirp = require('mkdirp');
 var zip = require("node-native-zip");
-var fse = require("fs-extra");
+var cron = require('node-cron');
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.set('view engine', 'ejs');
 
-app.get('/', function(req, res){
-  res.sendfile("index.html");
+app.get('/', function (req, res) {
+    res.render("index");
 });
 
-var searchfile;
-var test;
-var songs;
-var titles;
-var userid;
-app.post('/', function (req, res) {	
-	if (typeof req.body.songName == "undefined") {
-        var downloadfile = req.body.download;		
+cron.schedule('* * * * *', function(){
+  fs.readdir(__dirname + "/files/", function(err, files){
+		files.forEach(function(file){
+			var filePath = __dirname + "/files/" + file;
+			console.log(filePath);
+			fs.stat(filePath, function(err, stats){
+				if(stats){
+					var createdAt = new Date(stats.ctime.toString()).getTime();
+					var nowTime = Date.now();
+					if(nowTime - createdAt > 1000*60*20){
+						del([filePath]).then(function(paths){
+							console.log('Deleted files and folders:\n', paths.join('\n'));
+						});
+					}
+				}
+			});
+		});
+  });
+});
+
+
+app.post('/', function (req, res) {
+
+	console.log(req.body);
+	var downloadFile;
+	var songs;
+	var titles;
+	var userId;
+	var songName = req.body.songName;
+	var searchFile;
+
+    if (typeof songName === "undefined"){
+        downloadFile = req.body.download;
     }
     else {
-        var filename = req.body.songName;
-		userid = req.body.userName;		
-		mkdirp(__dirname + "/files/"+userid, function(err) { 
-			console.log("new folder created.");
-		});			
-        searchfile = filename.split(",");		
-    }
-    if (downloadfile == "download") {				
-		var archive = new zip();
-		var array =  [];
-		for(var x = 0 ; x < searchfile.length ; x++)
-		{
-			array.push({ name: searchfile[x]+".mp4", path: __dirname + "/files/"+userid+"/"+searchfile[x]+".mp4" });
-		}
-		console.log(array);
-    archive.addFiles(array, 
-		function () {
-        var buff = archive.toBuffer();        
-        fs.writeFile(__dirname + "/files/"+userid+".zip", buff, function () {
-            console.log("Finished");
-			res.download(__dirname + "/files/" + userid + ".zip");
+        userId = req.body.userName;
+        mkdirp(__dirname + "/files/" + userId, function (err) {
         });
-		}, function (err) {
-			console.log(err);
-		});			
-		}
-		
-    if (downloadfile == "delete") {	
-		
-	}
-	
-    if (typeof downloadfile == "undefined") {
-        var video_url = req.body.video_id;
-		console.log(video_url);
-		console.log(filename);
-        songs = video_url.split(",");
-        titles = filename.split(",");
-		//console.log("4");
-		insertone();			
-	}
-	
-	function insertone(){
-		var record = songs[0];
-		var recordname = titles[0];
-		var video = youtubedl(record,
-            ["--extract-audio"],
-            { cwd: __dirname });                        
-            video.pipe(fs.createWriteStream(__dirname + "/files/" + userid + "/" + recordname + '.mp4'));
-			//console.log("5");
-			songs.splice(0,1);
-			titles.splice(0,1);
-			var size = 0;
-			video.on('info', function(info) {
-			console.log('Download started');
-			console.log('filename: ' + info.filename);
-			size  = info.size;
-			});
-			var pos = 0;
-		var percentage;
-		video.on('data', function(data) {
-			 pos += data.length;			
-		 if (size) {
-			var percent = (pos / size * 100).toFixed(2);
-			process.stdout.cursorTo(0);
-			process.stdout.clearLine(1);
-			process.stdout.write(percent + '%');
-			percentage = percent;
+        searchFile = songName.split(",");
+    }
+
+    if (downloadFile == "download") {
+		searchFile = req.body.searchFile;
+		console.log(searchFile);
+		searchFile = searchFile.split(",");
+        userId = req.body.userId;
+        var archive = new zip();
+        var archivedFiles = [];
+        for (var x = 0; x < searchFile.length; x++) {
+			console.log(__dirname + "/files/" + userId + "/" + searchFile[x] + ".mp3");
+            archivedFiles.push({ name: searchFile[x] + ".mp3", path: __dirname + "/files/" + userId + "/" + searchFile[x] + ".mp3" });
+        }
+
+        archive.addFiles(archivedFiles, function (err) {
+			if(err){
+				console.log(err);
 			}
-			
-		if(percentage == 100){
-		console.log("\narray length : " + songs.length);
-		if(songs.length == 0)	{
-			console.log("Download completed");
-			res.sendfile("download.html");
-		}
-		else{			
-			insertone();
-		}						
-		}
-		});
-	}
-		
+			else{
+				var buff = archive.toBuffer();
+				fs.writeFile(__dirname + "/files/" + userId + ".zip", buff, function () {
+					del([__dirname + "/files/" + userId]).then(function(paths){
+						console.log('Deleted files and folders:\n', paths.join('\n'));
+					});
+					console.log("Finished");
+					res.download(__dirname + "/files/" + userId + ".zip");
+				});
+			}
+        },
+        function (err) {
+            res.end("An error occured in zipping files. Please try again.");
+        });
+
+    }
+
+    if (typeof downloadFile === "undefined") {
+        var video_url = req.body.video_id;
+        songs = video_url.split(",");
+        titles = songName.split(",");
+        insertone(songs, titles, userId, searchFile, res);
+    }
 });
 
+function insertone(songs, titles, userId, searchFile, res) {
 
+    var record = songs[0];
+    var recordname = titles[0];
+	var size = 0;
+	var pos = 0;
+    var percentage = 0;
+    var rendered = false;
+    
+    console.log(record);
 
-app.listen(8000,function(){
+    var video = youtubedl(
+		record,
+        ["--format=140"],
+        { cwd: __dirname }
+    );
+    
+    video.pipe(fs.createWriteStream(__dirname + "/files/" + userId + "/" + recordname + '.mp3'));
+
+    songs.splice(0, 1);
+    titles.splice(0, 1);
+
+    video.on('info', function (info) {
+        size = info.size;
+    });
+
+    video.on('data', function (data) {
+        pos += data.length;
+        if (size) {
+            var percent = (pos / size * 100).toFixed(2);
+            percentage = percent;
+            console.log(percentage);
+        }
+
+        if (percentage == 100) {
+			if (songs.length === 0 && rendered === false) {
+				console.log("Ready to be downloaded");
+				rendered = true;
+				res.render("download", {
+					searchFile : searchFile,
+					userId : userId
+                });
+            }
+            else {
+				if(rendered === false){
+					insertone(songs, titles, userId, searchFile, res);
+				}
+            }
+        }
+    });
+
+}
+    
+
+app.listen(process.env.PORT || 8000,function(){
   console.log("Started on PORT 8000");
-})
+});
+
+process.on('uncaughtException', function(err) {
+  console.log(err);
+});
+
+console.log = function(msg){
+};
