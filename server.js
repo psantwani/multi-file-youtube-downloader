@@ -55,7 +55,7 @@ app.post('/', function (req, res) {
         downloadFile = req.body.download;
     }
     else {
-        userId = req.body.userName;
+        userId = req.body.userName + "_" + Date.now();
         mkdirp(__dirname + "/files/" + userId, function (err) {
         });
         searchFile = songName.split(",");
