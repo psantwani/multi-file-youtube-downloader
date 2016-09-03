@@ -1,6 +1,11 @@
 {
-  "name": "get-post-demo",
+  "name": "youtube-downloader",
   "version": "0.0.1",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "main": "server.js",
+  "author": "Piyush Santwani",
   "dependencies": {
     "body-parser": "^1.8.1",
     "del": "^2.2.1",
@@ -9,6 +14,7 @@
     "ffmpeg": "0.0.4",
     "fs-extra": "^0.14.0",
     "node-cron": "^1.1.1",
+    "nodemon": "^1.10.2",
     "youtube-dl": "^1.11.1"
   }
 }
